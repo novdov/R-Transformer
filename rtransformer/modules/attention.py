@@ -30,7 +30,7 @@ def scaled_dot_attention(
 class MultiHeadedAttention(nn.Module):
     """Multi-Head Attention"""
 
-    def __init__(self, num_head: int, d_model: int, dropout: float = 0.1):
+    def __init__(self, num_head: int, d_model: int, seq_len: int, dropout: float = 0.1):
         super(MultiHeadedAttention, self).__init__()
         assert d_model % num_head == 0
         self.d_k = d_model // num_head
@@ -39,27 +39,20 @@ class MultiHeadedAttention(nn.Module):
         self.attn = None
         self.dropout = nn.Dropout(p=dropout)
 
-    def forward(
-        self,
-        query: torch.Tensor,
-        key: torch.Tensor,
-        value: torch.Tensor,
-        mask: Optional[torch.Tensor] = None,
-    ) -> torch.Tensor:
-        if mask is not None:
-            # Same mask applied to all h heads.
-            mask = mask.unsqueeze(1)
-        nbatches = query.size(0)
+        self.subsequent_mask = utils.subsequent_mask(seq_len)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        nbatches = x.size(0)
 
         # 1) Do all the linear projections in batch from d_model => h x d_k
         query, key, value = [
             l(x).view(nbatches, -1, self.num_head, self.d_k).transpose(1, 2)
-            for l, x in zip(self.linears, (query, key, value))
+            for l, x in zip(self.linears, (x, x, x))
         ]
 
         # 2) Apply attention on all the projected vectors in batch.
         x, self.attn = scaled_dot_attention(
-            query, key, value, mask=mask, dropout=self.dropout
+            query, key, value, mask=self.subsequent_mask, dropout=self.dropout
         )
 
         # 3) "Concat" using a view and apply a final linear.

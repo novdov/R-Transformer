@@ -13,4 +13,4 @@ def clones(module, n):
 def subsequent_mask(size):
     attn_shape = (1, size, size)
     _subsequent_mask = np.triu(np.ones(attn_shape), k=1).astype("uint8")
-    return torch.from_numpy(_subsequent_mask) == 0
+    return (torch.from_numpy(_subsequent_mask) == 0).unsqueeze(1)
