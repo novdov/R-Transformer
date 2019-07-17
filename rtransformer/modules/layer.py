@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-from . import utils
 from .rnn import LocalRNN
 
 
@@ -18,10 +17,20 @@ class LocalRNNLayer(nn.Module):
     ):
         super().__init__()
         self.local_rnn = LocalRNN(d_model, window_size, dropout, seq_len, rnn_type)
-        self.sublayer_connection = utils.SublayerConnection(d_model, dropout)
+        self.sublayer_connection = SublayerConnection(d_model, dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.sublayer_connection(x, self.local_rnn)
+
+
+class SublayerConnection(nn.Module):
+    def __init__(self, size, dropout):
+        super().__init__()
+        self.dropout = dropout
+        self.layer_norm = nn.LayerNorm(size)
+
+    def forward(self, x, sublayer):
+        return x + self.dropout(sublayer(self.layer_norm(x)))
 
 
 class PositionwiseFeedForward(nn.Module):

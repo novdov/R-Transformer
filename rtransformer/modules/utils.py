@@ -5,16 +5,6 @@ import torch
 import torch.nn as nn
 
 
-class SublayerConnection(nn.Module):
-    def __init__(self, size, dropout):
-        super().__init__()
-        self.dropout = dropout
-        self.layer_norm = nn.LayerNorm(size)
-
-    def forward(self, x, sublayer):
-        return x + self.dropout(sublayer(self.layer_norm(x)))
-
-
 def clones(module, n):
     """Produce N identical layers."""
     return nn.ModuleList([copy.deepcopy(module) for _ in range(n)])
