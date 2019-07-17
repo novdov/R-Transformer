@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from . import utils
+from rtransformer.modules import utils
 
 
 def scaled_dot_attention(

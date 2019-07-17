@@ -23,9 +23,9 @@ class LocalRNN(nn.Module):
         self,
         hidden_size: int,
         window_size: int,
-        dropout: float,
         seq_len: int,
-        rnn_type: str = "lstm",
+        dropout: float,
+        rnn_type: str,
     ):
         super().__init__()
         self.window_size = window_size

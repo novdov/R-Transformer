@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from .rnn import LocalRNN
+from rtransformer.modules.rnn import LocalRNN
 
 
 class LocalRNNLayer(nn.Module):
@@ -11,9 +11,9 @@ class LocalRNNLayer(nn.Module):
         self,
         d_model: int,
         window_size: int,
-        dropout: float,
         seq_len: int,
-        rnn_type: str = "lstm",
+        dropout: float,
+        rnn_type: str,
     ):
         super().__init__()
         self.local_rnn = LocalRNN(d_model, window_size, dropout, seq_len, rnn_type)
@@ -36,10 +36,13 @@ class SublayerConnection(nn.Module):
 class PositionwiseFeedForward(nn.Module):
     """Position-wise Feed-Forward Networks"""
 
-    def __init__(self, d_ff: int, d_model: int):
+    def __init__(self, d_ff: int, d_model: int, dropout: float):
         super().__init__()
         self.ffn = nn.Sequential(
-            nn.Linear(d_model, d_ff), nn.ReLU(), nn.Dropout(), nn.Linear(d_ff, d_model)
+            nn.Linear(d_model, d_ff),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_ff, d_model),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
