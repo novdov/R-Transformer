@@ -1,0 +1,37 @@
+import torch
+import torch.nn as nn
+
+from . import utils
+from .rnn import LocalRNN
+
+
+class LocalRNNLayer(nn.Module):
+    """Local RNN layer with local RNN and residual connection."""
+
+    def __init__(
+        self,
+        d_model: int,
+        window_size: int,
+        dropout: float,
+        seq_len: int,
+        rnn_type: str = "lstm",
+    ):
+        super().__init__()
+        self.local_rnn = LocalRNN(d_model, window_size, dropout, seq_len, rnn_type)
+        self.sublayer_connection = utils.SublayerConnection(d_model, dropout)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.sublayer_connection(x, self.local_rnn)
+
+
+class PositionwiseFeedForward(nn.Module):
+    """Position-wise Feed-Forward Networks"""
+
+    def __init__(self, d_ff: int, d_model: int):
+        super().__init__()
+        self.ffn = nn.Sequential(
+            nn.Linear(d_model, d_ff), nn.ReLU(), nn.Dropout(), nn.Linear(d_ff, d_model)
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.ffn(x)
